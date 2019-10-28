@@ -1,0 +1,22 @@
+{
+  "name": "s3-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.s3.S3SinkConnector",
+    "tasks.max": "1",
+    "topics.regex": "(mysql|mongo)\\.demo\\..*",
+    "s3.bucket.name": "kafkaconnect-demo",
+    "s3.region": "us-east-1",
+    "flush.size": "10000",
+    "storage.class": "io.confluent.connect.s3.storage.S3Storage",
+    "format.class": "io.confluent.connect.s3.format.avro.AvroFormat",
+    "schema.compatibility": "NONE",
+    "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
+    "locale": "en",
+    "timezone": "UTC",
+    "path.format": "'date'=YYYY-MM-dd",
+    "partition.duration.ms": "86400000",
+    "rotate.interval.ms": "60000",
+    "rotate.schedule.interval.ms": "10000",
+    "timestamp.extractor": "Record"
+  }
+}

@@ -58,3 +58,199 @@ Setup connector:
 Check results:
 
     http localhost:9200/mysql.demo.users/_search?q=placki
+
+### S3 sink
+
+First, copy AWS credentials to be available for Connect:
+
+    docker exec connect mkdir /root/.aws
+    docker cp ~/.aws/credentials.mine connect:/root/.aws/credentials
+    docker restart connect
+
+Then, run the S3 sink:
+
+    http POST :8083/connectors @connect/s3-sink.json
+
+Later, add a table definition in Athena:
+
+```
+CREATE EXTERNAL TABLE mysql_demo_users (
+  before STRUCT<id: INT, name: STRING, email: STRING, description: STRING, city: STRING>,
+  after STRUCT<id: INT, name: STRING, email: STRING, description: STRING, city: STRING>,
+  source STRUCT<version: STRING, connector: STRING, name: STRING, ts_ms: BIGINT, snapshot: STRING, db: STRING, table: STRING, server_id: BIGINT, gtid: STRING, file: STRING, pos: BIGINT, row: INT, thread: BIGINT, query: STRING>,
+  op STRING,
+  ts_ms BIGINT
+)
+PARTITIONED BY (date STRING)
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+WITH SERDEPROPERTIES ('avro.schema.literal'='
+{
+  "type": "record",
+  "name": "Envelope",
+  "namespace": "mysql.demo.users",
+  "fields": [
+    {
+      "name": "before",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "Value",
+          "fields": [
+            {
+              "name": "id",
+              "type": "int"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "email",
+              "type": "string"
+            },
+            {
+              "name": "description",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "city2",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ],
+          "connect.name": "mysql.demo.users.Value"
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "after",
+      "type": [
+        "null",
+        "Value"
+      ],
+      "default": null
+    },
+    {
+      "name": "source",
+      "type": {
+        "type": "record",
+        "name": "Source",
+        "namespace": "io.debezium.connector.mysql",
+        "fields": [
+          {
+            "name": "version",
+            "type": "string"
+          },
+          {
+            "name": "connector",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "ts_ms",
+            "type": "long"
+          },
+          {
+            "name": "snapshot",
+            "type": [
+              {
+                "type": "string",
+                "connect.version": 1,
+                "connect.parameters": {
+                  "allowed": "true,last,false"
+                },
+                "connect.default": "false",
+                "connect.name": "io.debezium.data.Enum"
+              },
+              "null"
+            ],
+            "default": "false"
+          },
+          {
+            "name": "db",
+            "type": "string"
+          },
+          {
+            "name": "table",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "server_id",
+            "type": "long"
+          },
+          {
+            "name": "gtid",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "file",
+            "type": "string"
+          },
+          {
+            "name": "pos",
+            "type": "long"
+          },
+          {
+            "name": "row",
+            "type": "int"
+          },
+          {
+            "name": "thread",
+            "type": [
+              "null",
+              "long"
+            ],
+            "default": null
+          },
+          {
+            "name": "query",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          }
+        ],
+        "connect.name": "io.debezium.connector.mysql.Source"
+      }
+    },
+    {
+      "name": "op",
+      "type": "string"
+    },
+    {
+      "name": "ts_ms",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    }
+  ],
+  "connect.name": "mysql.demo.users.Envelope"
+}
+')
+STORED AS AVRO
+LOCATION 's3://kafkaconnect-demo/topics/mysql.demo.users';
+```
