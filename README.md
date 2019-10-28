@@ -254,3 +254,7 @@ WITH SERDEPROPERTIES ('avro.schema.literal'='
 STORED AS AVRO
 LOCATION 's3://kafkaconnect-demo/topics/mysql.demo.users';
 ```
+
+Sample query:
+
+    SELECT after.id, after.name, before.description before, after.description after, from_unixtime(ts_ms / 1000) FROM mysql_demo_users order by ts_ms
