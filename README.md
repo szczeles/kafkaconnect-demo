@@ -45,3 +45,16 @@ Finally, setup source and sink:
     http POST localhost:8083/connectors @connect/mongo-source.json 
     http POST localhost:8083/connectors @connect/postgres-mongo-sink.json
 
+### Elasticsearch
+
+Run container:
+
+    docker-compose up -d elasticsearch
+
+Setup connector:
+
+    http POST localhost:8083/connectors @connect/elastic-sink.json
+
+Check results:
+
+    http localhost:9200/mysql.demo.users/_search?q=placki
