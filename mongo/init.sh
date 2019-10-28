@@ -13,6 +13,7 @@ sleep 5
 
 mongo localhost:27017/admin <<-EOF
     db.createUser({ user: 'admin', pwd: 'admin', roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] });
+    db.grantRolesToUser("admin", ["clusterManager"]);
 EOF
 
 mongo -u admin -p admin localhost:27017/admin <<-EOF

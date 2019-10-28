@@ -1,4 +1,4 @@
-# FLOW
+# Kafka Connect Demo
 
 ### Start and examine MySQL
 
