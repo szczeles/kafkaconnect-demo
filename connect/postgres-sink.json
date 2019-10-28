@@ -12,6 +12,7 @@
     "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
     "transforms.route.replacement": "$3",
     "auto.create": "true",
+    "auto.evolve": "true",
     "insert.mode": "upsert",
     "pk.fields": "id",
     "pk.mode": "record_key",
