@@ -1,0 +1,21 @@
+{
+    "name" : "postgres-mongo-sink",
+    "config" : {
+        "connector.class" : "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "tasks.max" : "1",
+        "topics" : "mongo.demo.user_actions",
+	"connection.url": "jdbc:postgresql://postgres:5432/demo?user=postgres&password=torunjug",
+        "auto.create" : "true",
+        "auto.evolve" : "true",
+        "insert.mode" : "upsert",
+        "delete.enabled": "true",
+        "pk.fields" : "id",
+        "pk.mode": "record_key",
+        "transforms": "mongoflatten,route",
+        "transforms.mongoflatten.type" : "io.debezium.connector.mongodb.transforms.ExtractNewDocumentState",
+        "transforms.mongoflatten.drop.tombstones": "false",
+        "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+        "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+        "transforms.route.replacement": "$3"
+    }
+}
