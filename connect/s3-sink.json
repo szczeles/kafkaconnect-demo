@@ -17,6 +17,9 @@
     "partition.duration.ms": "86400000",
     "rotate.interval.ms": "60000",
     "rotate.schedule.interval.ms": "10000",
-    "timestamp.extractor": "Record"
+    "timestamp.extractor": "Record",
+    "transforms": "dropTombstones",
+    "transforms.dropTombstones.type": "io.confluent.connect.transforms.TombstoneHandler",
+    "transforms.dropTombstones.behavior": "ignore"
   }
 }

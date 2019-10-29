@@ -7,7 +7,7 @@
 
 ### Start Kafka
 
-docker-compose up -d kafka
+    docker-compose up -d kafka
 
 ### Start Kafka Compose
 
