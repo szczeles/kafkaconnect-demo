@@ -93,6 +93,15 @@ services:
     environment:
     - discovery.type=single-node
 
+  ksql:
+    container_name: ksql
+    image: confluentinc/cp-ksql-server:5.3.1
+    environment:
+    - KSQL_BOOTSTRAP_SERVERS=kafka:9092
+    - KSQL_LISTENERS=http://0.0.0.0:8088/
+    - KSQL_KSQL_SERVICE_ID=ksql_service
+    - KSQL_KSQL_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+
 volumes:
   zookeeper_data: {}
   kafka_data: {}

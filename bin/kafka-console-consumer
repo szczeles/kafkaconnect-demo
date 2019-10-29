@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec docker exec -t kafka kafka-console-consumer --bootstrap-server kafka:9092 $@
+

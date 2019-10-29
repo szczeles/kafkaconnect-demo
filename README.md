@@ -258,3 +258,22 @@ LOCATION 's3://kafkaconnect-demo/topics/mysql.demo.users';
 Sample query:
 
     SELECT after.id, after.name, before.description before, after.description after, from_unixtime(ts_ms / 1000) FROM mysql_demo_users order by ts_ms
+
+### KSQL processing
+
+Start KSQL with
+
+    docker-compose up -d ksql
+
+Add sample query
+
+    create stream users with(kafka_topic='mysql.demo.users', value_format='AVRO');
+    create stream address_changed_notification with (value_format='JSON') as 
+        select before->email rcpt, concat('Your e-mail address was changed to ', after->email) message
+	from users where before->email <> after->email;
+
+Add REST connector
+
+    http POST :8083/connectors @connect/rest-sink.json
+
+Visit https://beeceptor.com/console/kafkademo and verify requests flow

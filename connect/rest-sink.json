@@ -1,0 +1,13 @@
+{
+  "name": "rest-sink",
+  "config": {
+    "connector.class": "com.tm.kafka.connect.rest.RestSinkConnector",
+    "tasks.max": "1",
+    "topics": "CHANGEDMAIL_JSON2",
+    "rest.sink.url": "https://kafkademo.free.beeceptor.com/changedmail",
+    "rest.sink.method": "POST",
+    "rest.sink.headers": "Content-Type:application/json",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.storage.StringConverter"
+  }
+}
