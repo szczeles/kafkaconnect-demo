@@ -3,7 +3,7 @@
   "config": {
     "connector.class": "com.tm.kafka.connect.rest.RestSinkConnector",
     "tasks.max": "1",
-    "topics": "CHANGEDMAIL_JSON2",
+    "topics": "ADDRESS_CHANGED_NOTIFICATION",
     "rest.sink.url": "https://kafkademo.free.beeceptor.com/changedmail",
     "rest.sink.method": "POST",
     "rest.sink.headers": "Content-Type:application/json",
