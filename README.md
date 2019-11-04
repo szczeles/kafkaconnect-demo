@@ -1,5 +1,10 @@
 # Kafka Connect Demo
 
+![Architecture](https://github.com/szczeles/szczeles.github.io/blob/master/images/Summary.svg)
+
+[Slides](https://gitpitch.com/szczeles/public-speaking/kafkaconnect)
+
+
 ### Start and examine MySQL
 
     docker-compose up -d mysql
