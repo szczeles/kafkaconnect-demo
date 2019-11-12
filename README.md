@@ -14,7 +14,7 @@
 
     docker-compose up -d kafka
 
-### Start Kafka Compose
+### Start Kafka Connect
 
     docker-compose up -d connect
     http localhost:8083
