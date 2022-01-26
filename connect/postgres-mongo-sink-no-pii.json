@@ -1,0 +1,27 @@
+{
+  "name": "postgres-mongo-sink-no-pii",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "mongo.demo.user_actions",
+    "connection.url": "jdbc:postgresql://postgres:5432/demo?user=postgres&password=torunjug",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "pk.fields": "id",
+    "pk.mode": "record_key",
+    "transforms": "mongoflatten,route,dropIp",
+    "transforms.mongoflatten.type": "io.debezium.connector.mongodb.transforms.ExtractNewDocumentState",
+    "transforms.mongoflatten.drop.tombstones": "false",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": ".*",
+    "transforms.route.replacement": "user_actions_no_pii",
+    "transforms.dropIp.type": "org.apache.kafka.connect.transforms.MaskField$Value",
+    "transforms.dropIp.fields": "ip",
+    "transforms.dropIp.predicate": "isTombstone",
+    "transforms.dropIp.negate": "true",
+    "predicates": "isTombstone",
+    "predicates.isTombstone.type": "org.apache.kafka.connect.transforms.predicates.RecordIsTombstone"
+  }
+}

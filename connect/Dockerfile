@@ -1,10 +1,10 @@
-FROM confluentinc/cp-kafka-connect-base:5.3.1
+FROM confluentinc/cp-kafka-connect-base:7.0.1
 
-RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:0.10.0 && \
-    confluent-hub install --no-prompt debezium/debezium-connector-mongodb:0.10.0 && \
-    confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:$CONFLUENT_VERSION && \
-    confluent-hub install --no-prompt confluentinc/kafka-connect-elasticsearch:$CONFLUENT_VERSION && \
-    confluent-hub install --no-prompt confluentinc/kafka-connect-s3:$CONFLUENT_VERSION && \
+RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:1.7.1 && \
+    confluent-hub install --no-prompt debezium/debezium-connector-mongodb:1.7.1 && \
+    confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.3.1 && \
+    confluent-hub install --no-prompt confluentinc/kafka-connect-elasticsearch:11.1.8 && \
+    confluent-hub install --no-prompt confluentinc/kafka-connect-s3:10.0.5 && \
     confluent-hub install --no-prompt confluentinc/connect-transforms:latest
 
 # custom sink

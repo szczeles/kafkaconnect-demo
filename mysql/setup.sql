@@ -1,4 +1,5 @@
-GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT  ON *.* TO 'debezium' IDENTIFIED BY 'dbz';
+CREATE USER 'debezium'@'%' IDENTIFIED BY 'dbz';
+GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT  ON *.* TO 'debezium'@'%';
 
 CREATE DATABASE demo;
 USE demo;
@@ -11,5 +12,5 @@ CREATE TABLE users (
 );
 
 INSERT INTO users
-VALUES (DEFAULT, "Adam", "adam@niepodam.pl", null),
-       (DEFAULT, "Basia", "basia@niepodam.pl", null);
+VALUES (DEFAULT, "Alice", "alice@example.com", null),
+       (DEFAULT, "Bob", "bob@example.com", null);

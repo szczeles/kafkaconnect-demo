@@ -1,43 +1,50 @@
 version: '3'
 services:
-  zookeeper:
-    container_name: zookeeper
-    image: confluentinc/cp-zookeeper:5.3.1
-    environment:
-    - ZOOKEEPER_CLIENT_PORT=2181
-    volumes:
-    - zookeeper_data:/var/lib/zookeeper/data
-
   kafka:
     container_name: kafka
-    image: confluentinc/cp-kafka:5.3.1
+    image: confluentinc/cp-kafka:7.0.1
+    ports:
+     - "9092:29092"
     environment:
-    - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-    - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-    - KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE=false
-    - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-    depends_on:
-    - zookeeper
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093,PLAINTEXT_HOST://localhost:29092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      KAFKA_HEAP_OPTS: "-Xmx256M"
     volumes:
     - kafka_data:/kafka/data
+    command:
+    - bash
+    - -c
+    - sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure && sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure && echo 'kafka-storage format --ignore-formatted -t $$(kafka-storage random-uuid) -c /etc/kafka/kafka.properties' >> /etc/confluent/docker/ensure && /etc/confluent/docker/run
 
   schema-registry:
     container_name: schema-registry
-    image: confluentinc/cp-schema-registry:5.3.1
+    image: confluentinc/cp-schema-registry:7.0.1
     environment:
-    - SCHEMA_REGISTRY_HOST_NAME=schema-registry
-    - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zookeeper:2181
-    - SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL=WARN
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+      SCHEMA_REGISTRY_HEAP_OPTS: "-Xmx128M"
     depends_on:
     - kafka
 
   mysql:
     container_name: mysql
-    image: mysql:5.7 # 8.0 maybe?
+    image: mysql:8.0.27
     ports:
     - 3006:3006
     environment:
-    - MYSQL_ROOT_PASSWORD=torunjug
+      MYSQL_ROOT_PASSWORD: kafkademo
     volumes:
     - ./mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
     - ./mysql/setup.sql:/docker-entrypoint-initdb.d/setup.sql
@@ -52,56 +59,69 @@ services:
     - kafka
     - schema-registry
     environment:
-    - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
-    - CONNECT_CONFIG_STORAGE_TOPIC=connect-configs
-    - CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1
-    - CONNECT_OFFSET_STORAGE_TOPIC=connect-offsets
-    - CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
-    - CONNECT_STATUS_STORAGE_TOPIC=connect-status
-    - CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
-    - CONNECT_GROUP_ID=100
-    - CONNECT_REST_ADVERTISED_HOST_NAME=connect
-    - CONNECT_KEY_CONVERTER=io.confluent.connect.avro.AvroConverter
-    - CONNECT_VALUE_CONVERTER=io.confluent.connect.avro.AvroConverter
-    - CONNECT_SCHEMA_REGISTRY_URL=http://schema-registry:8081
-    - CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL=http://schema-registry:8081
-    - CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL=http://schema-registry:8081
-    - CONNECT_INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
-    - CONNECT_INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
-    - CONNECT_PLUGIN_PATH=/usr/share/java,/usr/share/confluent-hub-components
+      KAFKA_HEAP_OPTS: "-Xmx256M"
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_GROUP_ID: 100
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components
 
   postgres:
     container_name: postgres
-    image: postgres:12.0
+    image: postgres:14.1
     environment:
-    - POSTGRES_PASSWORD=torunjug
+      POSTGRES_PASSWORD: kafkademo
     volumes:
     - ./postgres/init.sql:/docker-entrypoint-initdb.d/setup.sql
 
   mongo:
     container_name: mongo
-    image: mongo:4.2
+    image: mongo:5.0.5
+    ports:
+    - 27017:27017
     volumes:
-    - ./mongo/init.sh:/usr/local/bin/init.sh
-    command: ["mongod", "--replSet", "rs0", "--auth"]
+    - ./mongo/init.sh:/docker-entrypoint-initdb.d/mongo-init.sh
+    - ./mongo/keyfile.pem:/tmp/keyfile.pem.orig:ro
+    entrypoint:
+    - bash
+    - -c
+    - |
+         cp /tmp/keyfile.pem.orig /tmp/keyfile.pem
+         chmod 400 /tmp/keyfile.pem
+         chown 999:999 /tmp/keyfile.pem
+         exec docker-entrypoint.sh $$@
+    command: ["mongod", "--bind_ip", "0.0.0.0", "--replSet", "rs0", "--auth", "--keyFile", "/tmp/keyfile.pem"]
 
   elasticsearch:
     container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
     ports:
     - 9200:9200
     environment:
-    - discovery.type=single-node
+      discovery.type: single-node
+      ES_JAVA_OPTS: '-Xmx256M'
 
   ksql:
     container_name: ksql
-    image: confluentinc/cp-ksql-server:5.3.1
+    image: confluentinc/cp-ksql-server:5.4.6
     environment:
-    - KSQL_BOOTSTRAP_SERVERS=kafka:9092
-    - KSQL_LISTENERS=http://0.0.0.0:8088/
-    - KSQL_KSQL_SERVICE_ID=ksql_service
-    - KSQL_KSQL_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      KSQL_HEAP_OPTS: '-Xmx256M'
+      KSQL_BOOTSTRAP_SERVERS: kafka:9092
+      KSQL_LISTENERS: http://0.0.0.0:8088/
+      KSQL_KSQL_SERVICE_ID: ksql_service
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8081
 
 volumes:
-  zookeeper_data: {}
   kafka_data: {}
