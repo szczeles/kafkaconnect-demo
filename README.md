@@ -73,7 +73,6 @@ First, copy AWS credentials to be available for Connect:
 
     docker exec connect mkdir /home/appuser/.aws
     docker cp ~/.aws/credentials.mine connect:/home/appuser/.aws/credentials
-    docker restart connect
 
 Then, run the S3 sink:
 
