@@ -284,18 +284,12 @@ Add sample query
         select before->email rcpt, concat('Your e-mail address was changed to ', after->email) message
 	from users where before->email <> after->email;
 
+Check the data:
+
+    ./bin/kafka-console-consumer --topic ADDRESS_CHANGED_NOTIFICATION --from-beginning
+
 Add REST connector
 
     http POST :8083/connectors @connect/rest-sink.json
 
 Visit https://beeceptor.com/console/kafkademo and verify requests flow
-
-### Known issues
-
-1. Schema changes are always an issue:
-    * adding new column in example(1) works, but removing a column causes system to fail
-    * changing types to incompatible ones will cause AVRO to fail compatibility tests
-    * beware NoSQL databases 
-
-2. Sinking data from Oracle can be expensive
-    * LogMiner or XStream - both cost a lot!
