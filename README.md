@@ -8,7 +8,7 @@
 ### Start and examine MySQL
 
     docker-compose up -d mysql
-    docker exec -ti mysql mysql -ptorunjug
+    docker exec -ti mysql mysql -pkafkademo demo
 
 ### Start Kafka
 
@@ -36,7 +36,6 @@ Then run Postgres Sink:
 ### Mongo
 
     docker-compose up -d mongo
-    docker exec mongo /usr/local/bin/init.sh
 
 Then fill with data:
 
@@ -50,6 +49,10 @@ Finally, setup source and sink:
     http POST localhost:8083/connectors @connect/mongo-source.json 
     http POST localhost:8083/connectors @connect/postgres-mongo-sink.json
 
+### Events + PII masking
+
+    http POST localhost:8083/connectors @connect/postgres-mongo-sink-no-pii.json
+
 ### Elasticsearch
 
 Run container:
@@ -62,15 +65,14 @@ Setup connector:
 
 Check results:
 
-    http localhost:9200/mysql.demo.users/_search?q=placki
+    http localhost:9200/mysql.demo.users/_search?q=gid
 
 ### S3 sink
 
 First, copy AWS credentials to be available for Connect:
 
-    docker exec connect mkdir /root/.aws
-    docker cp ~/.aws/credentials.mine connect:/root/.aws/credentials
-    docker restart connect
+    docker exec connect mkdir /home/appuser/.aws
+    docker cp ~/.aws/credentials.mine connect:/home/appuser/.aws/credentials
 
 Then, run the S3 sink:
 
@@ -270,12 +272,21 @@ Start KSQL with
 
     docker-compose up -d ksql
 
+Connect to console:
+
+    docker exec -ti ksql ksql
+
 Add sample query
 
+    set 'auto.offset.reset'='earliest';
     create stream users with(kafka_topic='mysql.demo.users', value_format='AVRO');
     create stream address_changed_notification with (value_format='JSON') as 
         select before->email rcpt, concat('Your e-mail address was changed to ', after->email) message
 	from users where before->email <> after->email;
+
+Check the data:
+
+    ./bin/kafka-console-consumer --topic ADDRESS_CHANGED_NOTIFICATION --from-beginning
 
 Add REST connector
 

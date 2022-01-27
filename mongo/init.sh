@@ -1,22 +1,21 @@
-#!/bin/sh
+#!/bin/sh -x
 
-mongo localhost:27017/demo <<-EOF
+mongo <<-EOF
     rs.initiate({
-        _id: "rs0",
-        members: [ { _id: 0, host: getHostName() + ":27017" } ]
     });
+    rs.status()
 EOF
 echo "Initiated replica set"
 
 sleep 5
 
 
-mongo localhost:27017/admin <<-EOF
+mongosh localhost:27017/admin <<-EOF
     db.createUser({ user: 'admin', pwd: 'admin', roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] });
     db.grantRolesToUser("admin", ["clusterManager"]);
 EOF
 
-mongo -u admin -p admin localhost:27017/admin <<-EOF
+mongosh -u admin -p admin localhost:27017/admin <<-EOF
     db.runCommand({
         createRole: "listDatabases",
         privileges: [

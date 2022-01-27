@@ -8,6 +8,7 @@
     "mongodb.user": "debezium",
     "mongodb.password": "dbz",
     "database.whitelist": "demo",
+    "capture.mode": "change_streams_update_full",
     "database.history.kafka.bootstrap.servers": "kafka:9092"
   }
 }
