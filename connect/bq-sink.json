@@ -1,0 +1,17 @@
+{
+  "name": "bq-sink",
+  "config": {
+    "connector.class": "com.wepay.kafka.connect.bigquery.BigQuerySinkConnector",
+    "tasks.max": "1",
+    "topics.regex": "(mysql|mongo)\\.demo\\..*",
+    "defaultDataset": "kafka_connect_workshops",
+    "project": "analytics-playground-232209",
+    "autoCreateTables": "true",
+    "autoUpdateSchemas" : "true",
+    "keyfile": "/tmp/gcp.creds",
+    "sanitizeTopics": "true",
+    "transforms": "dropTombstones",
+    "transforms.dropTombstones.type": "io.confluent.connect.transforms.TombstoneHandler",
+    "transforms.dropTombstones.behavior": "ignore"
+  }
+}
