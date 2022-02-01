@@ -1,0 +1,28 @@
+{
+  "name": "gcs-sink",
+  "config": {
+    "confluent.topic.bootstrap.servers": "kafka:9092",
+    "confluent.topic.replication.factor": "1",
+    "connector.class": "io.confluent.connect.gcs.GcsSinkConnector",
+    "tasks.max": "1",
+    "topics.regex": "(mysql|mongo)\\.demo\\..*",
+    "format.class": "io.confluent.connect.gcs.format.avro.AvroFormat",
+    "flush.size": "10000",
+    "rotate.interval.ms": "60000",
+    "rotate.schedule.interval.ms": "10000",
+    "schema.compatibility": "NONE",
+    "gcs.bucket.name": "kafka-connect-demo",
+    "gcs.credentials.path": "/tmp/gcp.creds",
+    "storage.class": "io.confluent.connect.gcs.storage.GcsStorage",
+    "topics.dir": "mariusz",
+    "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
+    "partition.duration.ms": "86400000",
+    "path.format": "'date'=YYYY-MM-dd",
+    "locale": "en",
+    "timezone": "UTC",
+    "timestamp.extractor": "Record",
+    "transforms": "dropTombstones",
+    "transforms.dropTombstones.type": "io.confluent.connect.transforms.TombstoneHandler",
+    "transforms.dropTombstones.behavior": "ignore"
+  }
+}

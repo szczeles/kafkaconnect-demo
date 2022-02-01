@@ -266,6 +266,42 @@ Sample query:
 
     SELECT after.id, after.name, before.description before, after.description after, from_unixtime(ts_ms / 1000) FROM mysql_demo_users order by ts_ms
 
+### GCS sink
+
+First, download ADC and copy these into the container:
+
+    gcloud auth login --update-adc
+    docker cp ~/.config/gcloud/application_default_credentials.json connect:/tmp/gcp.creds
+
+Create prerequisites: GCS bucket and BQ dataset:
+
+    gsutil mb -l europe-west4 -p analytics-playground-232209 gs://kafka-connect-demo
+    bq --location=europe-west4 mk --dataset analytics-playground-232209:kafka_connect_workshops
+
+Then, run the connector and check the created files:
+
+    http POST :8083/connectors @connect/gcs-sink.json
+    gsutil ls -r gs://kafka-connect-demo/mariusz
+
+Browse the files in BQ using external table:
+
+    bq mkdef --hive_partitioning_mode=AUTO --source_format=AVRO \
+        --hive_partitioning_source_uri_prefix gs://kafka-connect-demo/mariusz/mysql.demo.users \
+        "gs://kafka-connect-demo/mariusz/mysql.demo.users/*.avro" > table.def
+    bq mk --project_id analytics-playground-232209 --external_table_definition=table.def \
+        kafka_connect_workshops.ext_mysql_users
+
+### BigQuery sink
+
+Connector setup:
+
+    http POST :8083/connectors @connect/bq-sink.json
+
+Sample query:
+
+    SELECT after.id, after.name, before.description before, after.description after, TIMESTAMP_MILLIS(ts_ms)
+    FROM kafka_connect_workshops.mysql_demo_users
+
 ### KSQL processing
 
 Start KSQL with
