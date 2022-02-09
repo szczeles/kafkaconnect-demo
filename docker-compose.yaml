@@ -115,7 +115,10 @@ services:
 
   ksql:
     container_name: ksql
-    image: confluentinc/cp-ksql-server:5.4.6
+    image: confluentinc/ksqldb-server:0.23.1
+    depends_on:
+    - kafka
+    - schema-registry
     environment:
       KSQL_HEAP_OPTS: '-Xmx256M'
       KSQL_BOOTSTRAP_SERVERS: kafka:9092

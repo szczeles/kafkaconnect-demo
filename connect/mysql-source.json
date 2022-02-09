@@ -11,6 +11,7 @@
     "database.server.id": "1010101",
     "database.server.name": "mysql",
     "database.whitelist": "demo",
+    "snapshot.mode": "when_needed",
     "database.history.kafka.bootstrap.servers": "kafka:9092",
     "database.history.kafka.topic": "mysql.schema-changes"
   }
